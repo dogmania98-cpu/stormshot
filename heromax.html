@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calculator</title>
+<style>
+    body { font-family: Arial, sans-serif; font-size: 20px; padding: 40px; }
+    label { display: inline-block; width: 120px; margin: 10px 0; }
+    input { font-size: 20px; padding: 5px; width: 200px; }
+    button { font-size: 22px; font-weight: bold; padding: 10px 20px; margin-top: 20px; }
+    #result { font-size: 28px; font-weight: bold; margin-top: 30px; }
+    #log { margin-top: 40px; font-size: 18px; white-space: pre-line; }
+</style>
+</head>
+<body>
+
+<h2>Simple Calculator</h2>
+
+<div>
+    <label for="hero">Hero Name:</label>
+    <input type="text" id="hero"><br>
+
+    <label for="base">Base:</label>
+    <input type="number" id="base"><br>
+
+    <label for="factor">Factor:</label>
+    <input type="number" id="factor" step="0.1"><br>
+
+    <button onclick="calculate()">Calculate</button>
+</div>
+
+<div id="result">Result: </div>
+
+<h3>Log</h3>
+<div id="log"></div>
+<button onclick="downloadLog()">Download Log</button>
+
+<script>
+let logData = "";
+
+function calculate() {
+    const hero = document.getElementById("hero").value.trim();
+    const base = parseInt(document.getElementById("base").value);
+    const factor = parseFloat(document.getElementById("factor").value).toFixed(1);
+
+    if (isNaN(base) || isNaN(factor)) {
+        document.getElementById("result").innerText = "Error: Base must be integer, Factor must be number.";
+        return;
+    }
+
+    const result = factor * 100 + base + 127;
+    document.getElementById("result").innerText = "Result: " + result;
+
+    const logLine = `Hero=${hero}, Base=${base}, Factor=${factor}, Result=${result}`;
+    logData += logLine + "\n";
+
+    document.getElementById("log").innerText = logData;
+}
+
+function downloadLog() {
+    const blob = new Blob([logData], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "log.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
