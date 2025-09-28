@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Speed-up Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .item { margin-bottom: 10px; }
+    label { display: inline-block; width: 140px; }
+    input { width: 100px; text-align: right; }
+    button { margin-top: 15px; padding: 8px 16px; font-size: 16px; }
+    #result { margin-top: 20px; font-weight: bold; font-size: 16px; }
+    #error { margin-top: 20px; color: red; }
+  </style>
+</head>
+<body>
+  <h2>Speed-up Calculator</h2>
+  <div id="calcForm"></div>
+  <button onclick="calculate()">Calculate</button>
+  <div id="result">Total Time: 0 hours | 0 days | 0 years</div>
+  <div id="error"></div>
+
+  <script>
+    try {
+      const items = {
+        "m1": {name:"1 min", value:1},
+        "m5": {name:"5 min", value:5},
+        "m15": {name:"15 min", value:15},
+        "m30": {name:"30 min", value:30},
+        "m60": {name:"60 min", value:60},
+        "h3": {name:"3 hr", value:180},
+        "h24": {name:"24 hr", value:1440},
+        "abox": {name:"A.box (4 hr)", value:240},
+        "mbox": {name:"M.box (20 hr)", value:1200}
+      };
+
+      const form = document.getElementById("calcForm");
+
+      for (let key in items) {
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const label = document.createElement("label");
+        label.innerText = items[key].name;
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.id = key;
+        input.value = 0;
+        input.min = 0;
+
+        div.appendChild(label);
+        div.appendChild(input);
+        form.appendChild(div);
+      }
+
+      window.calculate = function() {
+        let totalMinutes = 0;
+        for (let key in items) {
+          const val = parseInt(document.getElementById(key).value) || 0;
+          totalMinutes += val * items[key].value;
+        }
+        let hours = totalMinutes / 60;
+        let days = totalMinutes / (60 * 24);
+        let years = totalMinutes / (60 * 24 * 365);
+
+        document.getElementById("result").innerText =
+          `Total Time: ${hours.toFixed(2)} hours | ${days.toFixed(2)} days | ${years.toFixed(4)} years`;
+      }
+
+    } catch (err) {
+      document.getElementById("error").innerText = "Error: " + err.message;
+    }
+  </script>
+</body>
+</html>
+
+
