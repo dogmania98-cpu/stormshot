@@ -2,46 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Migration Ticket Calculator</title>
+  <title>Migration Ticket Calculator (Dual)</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 30px; font-size: 20px; }
     label { display: block; margin-bottom: 10px; font-weight: bold; }
     input { font-size: 18px; padding: 5px; width: 200px; }
     button { font-size: 18px; padding: 8px 16px; margin-top: 15px; }
     #result { margin-top: 20px; font-weight: bold; font-size: 24px; color: darkblue; }
+    table { margin-top: 20px; border-collapse: collapse; font-size: 20px; }
+    td, th { border: 1px solid #ccc; padding: 8px 15px; text-align: center; }
+    th { background: #eee; }
   </style>
 </head>
 <body>
   <h1>Migration Ticket Calculator</h1>
   
-  <label for="power">Abyssal Mine Power (mil):</label>
-  <input type="number" id="power" step="0.01" placeholder="Enter power value">
+  <label for="power">Abyssal Mine Power:</label>
+  <input type="number" id="power" step="1" placeholder="Enter power value">
   
   <br>
   <button onclick="calculate()">Calculate</button>
   
   <div id="result"></div>
   
+  <table id="outputTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Old Rule</th>
+        <th>New Rule</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td id="oldResult"></td>
+        <td id="newResult"></td>
+      </tr>
+    </tbody>
+  </table>
+  
   <script>
-    const thresholds = [1, 2, 3, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35];
-
-    function calculate() {
-      const input = parseFloat(document.getElementById("power").value);
-      if (isNaN(input) || input <= 0) {
-        document.getElementById("result").innerText = "Please enter a valid number.";
-        return;
+    // 기존 rule 기준값
+    const oldThresholds = [1, 2, 3, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35];
+    
+    // 새 rule 기준표
+    const newThresholds = [
+      { power: 0, tickets: 1 },
+      { power: 300, tickets: 2 },
+      { power: 600, tickets: 3 },
+      { power: 900, tickets: 5 },
+      { power: 1200, tickets: 6 },
+      { power: 1500, tickets: 7 },
+      { power: 2000, tickets: 8 },
+      { power: 2500, tickets: 10 },
+      { power: 3000, tickets: 12 },
+      { power: 3500, tickets: 14 },
+      { power: 4000, tickets: 16 },
+      { power: 4500, tickets: 18 },
+      { power: 5000, tickets: 20 },
+      { power: 5500, tickets: 22 },
+      { power: 6000, tickets: 25 },
+      { power: 6500, tickets: 30 },
+      { power: 7000, tickets: 35 }
+    ];
+    
+    function calculateOldRule(power) {
+      const result = power / 254.605;
+      for (let t of oldThresholds) {
+        if (result < t) return t;
       }
-      
-      const result = input / 254.605;
-      let tickets = thresholds[thresholds.length - 1]; // 기본적으로 최댓값
-      for (let t of thresholds) {
-        if (result < t) { // 기준과 같으면 다음 단계로 올림
-          tickets = t;
+      return oldThresholds[oldThresholds.length - 1];
+    }
+    
+    function calculateNewRule(power) {
+      let tickets = newThresholds[newThresholds.length - 1].tickets;
+      for (let i = 0; i < newThresholds.length; i++) {
+        if (power < newThresholds[i].power) {
+          tickets = newThresholds[i-1].tickets;
           break;
         }
       }
-
-      document.getElementById("result").innerText = "Required Tickets: " + tickets;
+      return tickets;
+    }
+    
+    function calculate() {
+      const power = parseFloat(document.getElementById("power").value);
+      if (isNaN(power) || power < 0) {
+        alert("Please enter a valid number.");
+        return;
+      }
+      
+      const oldResult = calculateOldRule(power);
+      const newResult = calculateNewRule(power);
+      
+      document.getElementById("oldResult").innerText = oldResult;
+      document.getElementById("newResult").innerText = newResult;
+      document.getElementById("outputTable").style.display = "table";
     }
   </script>
 </body>
