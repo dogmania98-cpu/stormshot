@@ -86,7 +86,8 @@
         let output = `Required Power: ${needPower.toLocaleString()} \nTroop Combination:\n`;
         for (let t = z; t >= 1; t--) {
           if (troops[t]) {
-            output += ` - T${t}: ${troops[t].toLocaleString()} troops\n`;
+            const unit = troops[t] === 1 ? "troop" : "troops";
+            output += ` - T${t}: ${troops[t].toLocaleString()} ${unit}\n`;
           }
         }
         document.getElementById("result").innerText = output;
