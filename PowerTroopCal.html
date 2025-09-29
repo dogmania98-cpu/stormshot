@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Power Tool</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    label { display: block; margin: 10px 0 5px; }
+    input { width: 150px; padding: 5px; }
+    button { padding: 8px 15px; margin-top: 20px; }
+    h2 { margin-top: 30px; color: darkblue; }
+    pre#result {
+      background: #f0f0f0;
+      padding: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <h1>Power Calculation Tool</h1>
+
+  <label for="x">Current Power</label>
+  <input type="number" id="x" placeholder="e.g. 1200">
+
+  <label for="y">Target Power</label>
+  <input type="number" id="y" placeholder="e.g. 3000">
+
+  <label for="z">Highest Tier (1~13)</label>
+  <input type="number" id="z" placeholder="e.g. 13">
+
+  <br>
+  <button onclick="calculate()">Calculate</button>
+
+  <h2>Result</h2>
+  <pre id="result"></pre>
+
+  <script>
+    // Power per troop for each Tier
+    const tierPower = {
+      1: 10,  2: 13,  3: 17,  4: 22,
+      5: 29,  6: 37,  7: 45,  8: 56,
+      9: 73, 10: 96, 11: 108, 12: 125, 13: 150
+    };
+
+    // Find a valid combination using DFS (higher tiers first)
+    function findCombination(needPower, highestTier) {
+      function dfs(remaining, tier, current) {
+        if (remaining === 0) return current; // exact match
+        if (tier === 0 || remaining < 0) return null; // no solution
+
+        const perTroop = tierPower[tier];
+        const maxCount = Math.floor(remaining / perTroop);
+
+        // try using as many of this tier as possible, decreasing step by step
+        for (let count = maxCount; count >= 0; count--) {
+          const newCurrent = { ...current };
+          if (count > 0) newCurrent[tier] = count;
+          const res = dfs(remaining - count * perTroop, tier - 1, newCurrent);
+          if (res) return res; // stop at the first valid solution
+        }
+        return null;
+      }
+
+      return dfs(needPower, highestTier, {});
+    }
+
+    function calculate() {
+      const x = parseFloat(document.getElementById("x").value) || 0;
+      const y = parseFloat(document.getElementById("y").value) || 0;
+      const z = parseInt(document.getElementById("z").value) || 1;
+
+      const needPower = y - x;
+      if (needPower <= 0) {
+        document.getElementById("result").innerText = "You have already reached the target power!";
+        return;
+      }
+
+      const troops = findCombination(needPower, z);
+
+      if (!troops) {
+        document.getElementById("result").innerText =
+          "⚠️ No exact combination found.";
+      } else {
+        let output = `Required Power: ${needPower.toLocaleString()} \nTroop Combination:\n`;
+        for (let t = z; t >= 1; t--) {
+          if (troops[t]) {
+            output += ` - T${t}: ${troops[t].toLocaleString()} troops\n`;
+          }
+        }
+        document.getElementById("result").innerText = output;
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+
