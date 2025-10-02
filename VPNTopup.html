@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diamond Price Comparison</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 30px; }
+  #timestamp { font-size:14px; color:#333; margin-bottom:10px; }
+  table { border-collapse: collapse; margin:20px 0; width: 100%; }
+  th, td { border:1px solid #aaa; padding:6px 8px; text-align:center; font-size:14px; }
+  th { background:#f0f0f0; }
+  button { font-size:16px; padding:8px 16px; margin:10px 0; cursor: pointer; }
+  .rate { font-weight: bold; color: darkgreen; }
+</style>
+</head>
+<body>
+<h2>Diamond Price Comparison</h2>
+<div id="timestamp">Last updated: -</div>
+<button onclick="calculate()">Calculate</button>
+
+<table id="calcTable">
+<thead>
+<tr>
+  <th>Coupon</th>
+  <th>Diamonds</th>
+  <th>USD</th><th>Diamonds/$1</th>
+  <th>Euro</th><th>Diamonds/$1</th>
+  <th>GBP</th><th>Diamonds/$1</th>
+  <th>KRW</th><th>Diamonds/$1</th>
+  <th>VND</th><th>Diamonds/$1</th>
+  <th>UAH</th><th>Diamonds/$1</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>No coupon</td><td>10,500</td><td data-usd="100">100</td><td></td><td data-eur="120">120</td><td></td><td data-gbp="90">90</td><td></td><td data-krw="149000">149,000</td><td></td><td data-vnd="2499000">2,499,000</td><td></td><td data-uah="4200">4,200</td><td></td></tr>
+<tr><td>No coupon</td><td>52,500</td><td data-usd="500">500</td><td></td><td data-eur="600">600</td><td></td><td data-gbp="450">450</td><td></td><td data-krw="790000">790,000</td><td></td><td data-vnd="12990000">12,990,000</td><td></td><td data-uah="20000">20,000</td><td></td></tr>
+<tr><td>No coupon</td><td>105,000</td><td data-usd="1000">1,000</td><td></td><td data-eur="1200">1,200</td><td></td><td data-gbp="900">900</td><td></td><td data-krw="1490000">1,490,000</td><td></td><td data-vnd="24990000">24,990,000</td><td></td><td data-uah="42000">42,000</td><td></td></tr>
+<tr><td>10% Discount</td><td>10,000</td><td data-usd="90">90</td><td></td><td data-eur="108">108</td><td></td><td data-gbp="81">81</td><td></td><td data-krw="134100">134,100</td><td></td><td data-vnd="2249100">2,249,100</td><td></td><td data-uah="3780">3,780</td><td></td></tr>
+<tr><td>10% Discount</td><td>50,000</td><td data-usd="450">450</td><td></td><td data-eur="540">540</td><td></td><td data-gbp="405">405</td><td></td><td data-krw="711000">711,000</td><td></td><td data-vnd="11691000">11,691,000</td><td></td><td data-uah="18000">18,000</td><td></td></tr>
+<tr><td>10% Discount</td><td>100,000</td><td data-usd="900">900</td><td></td><td data-eur="1080">1,080</td><td></td><td data-gbp="810">810</td><td></td><td data-krw="1341000">1,341,000</td><td></td><td data-vnd="22491000">22,491,000</td><td></td><td data-uah="37800">37,800</td><td></td></tr>
+<tr><td>10% Bonus</td><td>11,000</td><td data-usd="100">100</td><td></td><td data-eur="120">120</td><td></td><td data-gbp="90">90</td><td></td><td data-krw="149000">149,000</td><td></td><td data-vnd="2499000">2,499,000</td><td></td><td data-uah="4200">4,200</td><td></td></tr>
+<tr><td>10% Bonus</td><td>55,000</td><td data-usd="500">500</td><td></td><td data-eur="600">600</td><td></td><td data-gbp="450">450</td><td></td><td data-krw="790000">790,000</td><td></td><td data-vnd="12990000">12,990,000</td><td></td><td data-uah="20000">20,000</td><td></td></tr>
+<tr><td>10% Bonus</td><td>110,000</td><td data-usd="1000">1,000</td><td></td><td data-eur="1200">1,200</td><td></td><td data-gbp="900">900</td><td></td><td data-krw="1490000">1,490,000</td><td></td><td data-vnd="24990000">24,990,000</td><td></td><td data-uah="42000">42,000</td><td></td></tr>
+</tbody>
+</table>
+
+<script>
+async function calculate() {
+  try {
+    // exchangerate.host API (USD base, 모든 통화 지원)
+    const res = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=EUR,GBP,KRW,VND,UAH");
+    const data = await res.json();
+    const rates = data.rates;
+
+    document.querySelectorAll("#calcTable tbody tr").forEach(row => {
+      const diamonds = parseFloat(row.children[1].innerText.replace(/,/g,""));
+      const cells = row.querySelectorAll("td");
+
+      // USD
+      if (cells[2].dataset.usd) {
+        const usdPrice = parseFloat(cells[2].dataset.usd);
+        cells[3].innerText = (diamonds / usdPrice).toFixed(2);
+        cells[3].classList.add("rate");
+      }
+
+      // EUR
+      if (cells[4].dataset.eur) {
+        const eurPrice = parseFloat(cells[4].dataset.eur);
+        const usdValue = eurPrice / rates.EUR; // EUR → USD
+        cells[5].innerText = (diamonds / usdValue).toFixed(2);
+        cells[5].classList.add("rate");
+      }
+
+      // GBP
+      if (cells[6].dataset.gbp) {
+        const gbpPrice = parseFloat(cells[6].dataset.gbp);
+        const usdValue = gbpPrice / rates.GBP; // GBP → USD
+        cells[7].innerText = (diamonds / usdValue).toFixed(2);
+        cells[7].classList.add("rate");
+      }
+
+      // KRW
+      if (cells[8].dataset.krw) {
+        const krwPrice = parseFloat(cells[8].dataset.krw.replace(/,/g,""));
+        const usdValue = krwPrice / rates.KRW; // KRW → USD
+        cells[9].innerText = (diamonds / usdValue).toFixed(2);
+        cells[9].classList.add("rate");
+      }
+
+      // VND
+      if (cells[10].dataset.vnd) {
+        const vndPrice = parseFloat(cells[10].dataset.vnd.replace(/,/g,""));
+        const usdValue = vndPrice / rates.VND; // VND → USD
+        cells[11].innerText = (diamonds / usdValue).toFixed(2);
+        cells[11].classList.add("rate");
+      }
+
+      // UAH
+      if (cells[12].dataset.uah) {
+        const uahPrice = parseFloat(cells[12].dataset.uah.replace(/,/g,""));
+        const usdValue = uahPrice / rates.UAH; // UAH → USD
+        cells[13].innerText = (diamonds / usdValue).toFixed(2);
+        cells[13].classList.add("rate");
+      }
+    });
+
+    // Timestamp 업데이트
+    const now = new Date();
+    document.getElementById("timestamp").innerText =
+      "Last updated: " + now.toLocaleString();
+
+  } catch (e) {
+    alert("Failed to fetch exchange rates. Please try again.");
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
