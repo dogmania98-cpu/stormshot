@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resource Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { font-size: 22px; font-weight: bold; }
+    label { display: block; margin-top: 10px; }
+    input { padding: 5px; font-size: 16px; width: 120px; }
+    button { margin-top: 15px; padding: 10px 20px; font-size: 16px; font-weight: bold; }
+    table { margin-top: 20px; border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+    #result { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>DIY & Chest Resource Calculator</h1>
+
+  <label>Raid Chest: <input type="number" id="raid"></label>
+  <label>Valuable DIY: <input type="number" id="valuable"></label>
+  <label>Advanced DIY: <input type="number" id="advanced"></label>
+  <label>War master DIY: <input type="number" id="war"></label>
+  <label>Rapid Growth DIY: <input type="number" id="rapid"></label>
+  <label>Discount DIY: <input type="number" id="discount"></label>
+
+  <button onclick="calculate()">Calculate</button>
+
+  <div id="result"></div>
+
+  <script>
+    const values = {
+      raid:      [150, 15, 30, 15, 75, 600, 0],
+      valuable:  [21, 2, 4, 2, 10, 80, 0],
+      advanced:  [20, 2, 4, 0, 0, 80, 0],
+      war:       [20, 0, 0, 0, 0, 80, 0],
+      rapid:     [0, 0, 0, 0, 0, 80, 6],
+      discount:  [0, 0, 0, 0, 0, 70, 7]
+    };
+
+    const headers = [
+      "Blood Crystal", "Draconic Breath", "Draconic Tribute",
+      "Divine Essence", "Rare Oyster", "Intensity gears", "Glow Gemstone"
+    ];
+
+    // LV9 requirements
+    const NEED_INTENSITY = 390625;
+    const NEED_GLOW = 6561;
+
+    function calculate() {
+      let totals = Array(7).fill(0);
+
+      for (let key in values) {
+        let count = parseInt(document.getElementById(key).value) || 0;
+        values[key].forEach((val, i) => {
+          totals[i] += val * count;
+        });
+      }
+
+      let html = "<table><tr>";
+      headers.forEach(h => { html += "<th>" + h + "</th>"; });
+      html += "</tr><tr>";
+      totals.forEach(t => { html += "<td>" + t.toLocaleString() + "</td>"; });
+      html += "</tr></table>";
+
+      // 부족한 수량 계산
+      let needIntensity = Math.max(0, NEED_INTENSITY - totals[5]);
+      let needGlow = Math.max(0, NEED_GLOW - totals[6]);
+
+      html += "<p><b>Intensity gears:</b> more for a LV9: " + needIntensity.toLocaleString() + "</p>";
+      html += "<p><b>Glow Gemstone:</b> more for a LV9: " + needGlow.toLocaleString() + "</p>";
+
+      document.getElementById("result").innerHTML = html;
+    }
+  </script>
+</body>
+</html>
