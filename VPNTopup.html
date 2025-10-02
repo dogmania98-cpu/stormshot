@@ -11,6 +11,7 @@
   th { background:#f0f0f0; }
   button { font-size:16px; padding:8px 16px; margin:10px 0; cursor: pointer; }
   .rate { font-weight: bold; color: darkgreen; }
+  #note { margin-top: 15px; font-style: italic; color: #444; }
 </style>
 </head>
 <body>
@@ -44,11 +45,12 @@
 </tbody>
 </table>
 
+<div id="note">Note: The larger the Diamonds/$1 value, the better.</div>
+
 <script>
 async function calculate() {
   try {
-    // exchangerate.host API (USD base, 모든 통화 지원)
-    const res = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=EUR,GBP,KRW,VND,UAH");
+    const res = await fetch("https://open.er-api.com/v6/latest/USD");
     const data = await res.json();
     const rates = data.rates;
 
@@ -63,48 +65,47 @@ async function calculate() {
         cells[3].classList.add("rate");
       }
 
-      // EUR
+      // EUR → USD
       if (cells[4].dataset.eur) {
         const eurPrice = parseFloat(cells[4].dataset.eur);
-        const usdValue = eurPrice / rates.EUR; // EUR → USD
+        const usdValue = eurPrice / rates.EUR;
         cells[5].innerText = (diamonds / usdValue).toFixed(2);
         cells[5].classList.add("rate");
       }
 
-      // GBP
+      // GBP → USD
       if (cells[6].dataset.gbp) {
         const gbpPrice = parseFloat(cells[6].dataset.gbp);
-        const usdValue = gbpPrice / rates.GBP; // GBP → USD
+        const usdValue = gbpPrice / rates.GBP;
         cells[7].innerText = (diamonds / usdValue).toFixed(2);
         cells[7].classList.add("rate");
       }
 
-      // KRW
+      // KRW → USD
       if (cells[8].dataset.krw) {
         const krwPrice = parseFloat(cells[8].dataset.krw.replace(/,/g,""));
-        const usdValue = krwPrice / rates.KRW; // KRW → USD
+        const usdValue = krwPrice / rates.KRW;
         cells[9].innerText = (diamonds / usdValue).toFixed(2);
         cells[9].classList.add("rate");
       }
 
-      // VND
+      // VND → USD
       if (cells[10].dataset.vnd) {
         const vndPrice = parseFloat(cells[10].dataset.vnd.replace(/,/g,""));
-        const usdValue = vndPrice / rates.VND; // VND → USD
+        const usdValue = vndPrice / rates.VND;
         cells[11].innerText = (diamonds / usdValue).toFixed(2);
         cells[11].classList.add("rate");
       }
 
-      // UAH
+      // UAH → USD
       if (cells[12].dataset.uah) {
         const uahPrice = parseFloat(cells[12].dataset.uah.replace(/,/g,""));
-        const usdValue = uahPrice / rates.UAH; // UAH → USD
+        const usdValue = uahPrice / rates.UAH;
         cells[13].innerText = (diamonds / usdValue).toFixed(2);
         cells[13].classList.add("rate");
       }
     });
 
-    // Timestamp 업데이트
     const now = new Date();
     document.getElementById("timestamp").innerText =
       "Last updated: " + now.toLocaleString();
@@ -117,3 +118,4 @@ async function calculate() {
 </script>
 </body>
 </html>
+
