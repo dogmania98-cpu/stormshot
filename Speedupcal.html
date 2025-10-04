@@ -6,31 +6,34 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .item { margin-bottom: 10px; }
-    label { display: inline-block; width: 140px; }
+    label { display: inline-block; width: 200px; }
     input { width: 100px; text-align: right; }
     button { margin-top: 15px; padding: 8px 16px; font-size: 16px; }
-    #result { margin-top: 20px; font-weight: bold; font-size: 16px; }
+    #result { margin-top: 20px; font-weight: bold; font-size: 18px; }
   </style>
 </head>
 <body>
   <h2>Speed-up Calculator</h2>
   <div id="calcForm"></div>
   <button onclick="calculate()">Calculate</button>
-  <div id="result">Total Time: 0 hours | 0 days | 0 years</div>
+  <div id="result">Total Time: 0 Hours or 0 Days or 0 Years</div>
 
   <script>
     const items = {
-      "m1": {name:"1 min", value:1},
-      "m5": {name:"5 min", value:5},
-      "m15": {name:"15 min", value:15},
-      "m30": {name:"30 min", value:30},
-      "m60": {name:"60 min", value:60},
-      "h3": {name:"3 hr", value:180},
-      "h8": {name:"8 hr", value:480},      // ✅ 추가
-      "h15": {name:"15 hr", value:900},    // ✅ 추가
-      "h24": {name:"24 hr", value:1440},
+      "m1":   {name:"1 min", value:1},
+      "m5":   {name:"5 min", value:5},
+      "m15":  {name:"15 min", value:15},
+      "m30":  {name:"30 min", value:30},
+      "m60":  {name:"60 min", value:60},
+      "h3":   {name:"3 hr", value:180},
+      "h8":   {name:"8 hr", value:480},
+      "h15":  {name:"15 hr", value:900},
+      "h24":  {name:"24 hr", value:1440},
       "abox": {name:"A.box (4 hr)", value:240},
-      "mbox": {name:"M.box (20 hr)", value:1200}
+      "mbox": {name:"M.box (20 hr)", value:1200},
+      "horse": {name:"LV.9 Horse, LV.8 Aquas", value:1230},
+      "kraken": {name:"LV.5 Kraken", value:540},
+      "wraith": {name:"LV.35 Wraithruler (50%)", value:1180}
     };
 
     const form = document.getElementById("calcForm");
@@ -64,7 +67,7 @@
       let years = totalMinutes / (60 * 24 * 365);
 
       document.getElementById("result").innerText =
-        `Total Time: ${hours.toFixed(2)} hours | ${days.toFixed(2)} days | ${years.toFixed(4)} years`;
+        `Total Time: ${hours.toFixed(2)} Hours or ${days.toFixed(2)} Days or ${years.toFixed(4)} Years`;
     }
   </script>
 </body>
