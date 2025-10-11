@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Speed-up Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .item { margin-bottom: 10px; }
+    label { display: inline-block; width: 200px; }
+    input { width: 100px; text-align: right; }
+    button { margin-top: 15px; padding: 8px 16px; font-size: 16px; margin-right: 10px; cursor: pointer; }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      background: #f0f0f0;
+      padding: 10px;
+      display: inline-block;
+    }
+  </style>
+  <!-- html2canvas library -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+  <h2>Speed-up Calculator</h2>
+  <div id="calcForm"></div>
+  <button onclick="calculate()">Calculate</button>
+  <button onclick="uploadToImgBB()">Get Link of the result</button>
+
+  <div id="result">Total Time: 0 Hours or 0 Days or 0 Years</div>
+
+  <script>
+    // ✅ ImgBB API Key
+    const IMGBB_API_KEY = "86d720584b096f2f73e3873d0c0ab341";
+
+    const items = {
+      "m1":   {name:"1 min", value:1},
+      "m5":   {name:"5 min", value:5},
+      "m15":  {name:"15 min", value:15},
+      "m30":  {name:"30 min", value:30},
+      "m60":  {name:"60 min", value:60},
+      "h3":   {name:"3 hr", value:180},
+      "h8":   {name:"8 hr", value:480},
+      "h15":  {name:"15 hr", value:900},
+      "h24":  {name:"24 hr", value:1440},
+      "abox": {name:"A.box (4 hr)", value:240},
+      "mbox": {name:"M.box (20 hr)", value:1200},
+      "horse": {name:"LV.9 Horse, LV.8 Aquas", value:1230},
+      "kraken": {name:"LV.5 Kraken", value:540},
+      "wraith": {name:"LV.35 Wraithruler (50%)", value:1180}
+    };
+
+    const form = document.getElementById("calcForm");
+
+    for (let key in items) {
+      const div = document.createElement("div");
+      div.className = "item";
+
+      const label = document.createElement("label");
+      label.innerText = items[key].name;
+
+      const input = document.createElement("input");
+      input.type = "number";
+      input.id = key;
+      input.value = 0;
+      input.min = 0;
+
+      div.appendChild(label);
+      div.appendChild(input);
+      form.appendChild(div);
+    }
+
+    function calculate() {
+      let totalMinutes = 0;
+      for (let key in items) {
+        const val = parseInt(document.getElementById(key).value) || 0;
+        totalMinutes += val * items[key].value;
+      }
+      let hours = totalMinutes / 60;
+      let days = totalMinutes / (60 * 24);
+      let years = totalMinutes / (60 * 24 * 365);
+
+      document.getElementById("result").innerText =
+        `Total Time: ${hours.toFixed(2)} Hours or ${days.toFixed(2)} Days or ${years.toFixed(4)} Years`;
+    }
+
+    // ✅ Upload result area to ImgBB and get link
+    function uploadToImgBB() {
+      html2canvas(document.getElementById("result")).then(canvas => {
+        canvas.toBlob(blob => {
+          const formData = new FormData();
+          formData.append("image", blob);
+
+          fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, {
+            method: "POST",
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const link = data.data.url;
+              navigator.clipboard.writeText(link).then(() => {
+                alert("✅ Uploaded successfully!\nLink copied to clipboard:\n" + link);
+              });
+              console.log("ImgBB Link:", link);
+            } else {
+              alert("❌ Upload failed: " + data.error.message);
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err);
+            alert("❌ Error uploading to ImgBB.");
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
