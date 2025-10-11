@@ -8,14 +8,25 @@
     .item { margin-bottom: 10px; }
     label { display: inline-block; width: 200px; }
     input { width: 100px; text-align: right; }
-    button { margin-top: 15px; padding: 8px 16px; font-size: 16px; }
-    #result { margin-top: 20px; font-weight: bold; font-size: 18px; }
+    button { margin-top: 15px; padding: 8px 16px; font-size: 16px; margin-right: 10px; }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      background: #f0f0f0;
+      padding: 10px;
+      display: inline-block;
+    }
   </style>
+  <!-- ✅ html2canvas CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
   <h2>Speed-up Calculator</h2>
   <div id="calcForm"></div>
   <button onclick="calculate()">Calculate</button>
+  <button onclick="saveImage()">Save as Image</button>
+
   <div id="result">Total Time: 0 Hours or 0 Days or 0 Years</div>
 
   <script>
@@ -69,6 +80,18 @@
       document.getElementById("result").innerText =
         `Total Time: ${hours.toFixed(2)} Hours or ${days.toFixed(2)} Days or ${years.toFixed(4)} Years`;
     }
+
+    // ✅ Save result area as image (PNG)
+    function saveImage() {
+      const resultDiv = document.getElementById("result");
+      html2canvas(resultDiv).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "speedup_result.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
   </script>
 </body>
 </html>
+
