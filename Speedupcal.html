@@ -8,7 +8,7 @@
     .item { margin-bottom: 10px; }
     label { display: inline-block; width: 200px; }
     input { width: 100px; text-align: right; }
-    button { margin-top: 15px; padding: 8px 16px; font-size: 16px; margin-right: 10px; }
+    button { margin-top: 15px; padding: 8px 16px; font-size: 16px; margin-right: 10px; cursor: pointer; }
     #result {
       margin-top: 20px;
       font-weight: bold;
@@ -18,18 +18,19 @@
       display: inline-block;
     }
   </style>
-  <!-- ✅ html2canvas CDN -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
   <h2>Speed-up Calculator</h2>
   <div id="calcForm"></div>
   <button onclick="calculate()">Calculate</button>
-  <button onclick="saveImage()">Save as Image</button>
+  <button onclick="uploadToImgBB()">Upload & Get Link</button>
 
   <div id="result">Total Time: 0 Hours or 0 Days or 0 Years</div>
 
   <script>
+    const IMGBB_API_KEY = "86d720584b096f2f73e3873d0c0ab341";
+
     const items = {
       "m1":   {name:"1 min", value:1},
       "m5":   {name:"5 min", value:5},
@@ -67,31 +68,61 @@
       form.appendChild(div);
     }
 
+    function formatNumber(num, decimals) {
+      return num.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
     function calculate() {
       let totalMinutes = 0;
       for (let key in items) {
         const val = parseInt(document.getElementById(key).value) || 0;
         totalMinutes += val * items[key].value;
       }
-      let hours = totalMinutes / 60;
-      let days = totalMinutes / (60 * 24);
-      let years = totalMinutes / (60 * 24 * 365);
+
+      const hours = totalMinutes / 60;
+      const days = totalMinutes / (60 * 24);
+      const years = totalMinutes / (60 * 24 * 365);
+
+      // ✅ 올바른 천단위 표시
+      const formattedHours = formatNumber(hours, 2);
+      const formattedDays = formatNumber(days, 2);
+      const formattedYears = formatNumber(years, 4);
 
       document.getElementById("result").innerText =
-        `Total Time: ${hours.toFixed(2)} Hours or ${days.toFixed(2)} Days or ${years.toFixed(4)} Years`;
+        `Total Time: ${formattedHours} Hours or ${formattedDays} Days or ${formattedYears} Years`;
     }
 
-    // ✅ Save result area as image (PNG)
-    function saveImage() {
-      const resultDiv = document.getElementById("result");
-      html2canvas(resultDiv).then(canvas => {
-        const link = document.createElement("a");
-        link.download = "speedup_result.png";
-        link.href = canvas.toDataURL("image/png");
-        link.click();
+    function uploadToImgBB() {
+      html2canvas(document.getElementById("result")).then(canvas => {
+        canvas.toBlob(blob => {
+          const formData = new FormData();
+          formData.append("image", blob);
+
+          fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, {
+            method: "POST",
+            body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const link = data.data.url;
+              navigator.clipboard.writeText(link)
+                .then(() => alert("✅ Uploaded!\nLink copied to clipboard:\n" + link))
+                .catch(() => alert("⚠️ Clipboard not supported.\nCopy manually:\n" + link));
+            } else {
+              alert("❌ Upload failed: " + data.error.message);
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err);
+            alert("❌ Error uploading to ImgBB.");
+          });
+        });
       });
     }
   </script>
 </body>
 </html>
-
