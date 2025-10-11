@@ -25,7 +25,7 @@
   <h2>Speed-up Calculator</h2>
   <div id="calcForm"></div>
   <button onclick="calculate()">Calculate</button>
-  <button onclick="uploadToImgBB()">Get Link of the result</button>
+  <button onclick="uploadToImgBB()">Upload & Get Link</button>
 
   <div id="result">Total Time: 0 Hours or 0 Days or 0 Years</div>
 
@@ -76,12 +76,18 @@
         const val = parseInt(document.getElementById(key).value) || 0;
         totalMinutes += val * items[key].value;
       }
-      let hours = totalMinutes / 60;
-      let days = totalMinutes / (60 * 24);
-      let years = totalMinutes / (60 * 24 * 365);
+
+      const hours = totalMinutes / 60;
+      const days = totalMinutes / (60 * 24);
+      const years = totalMinutes / (60 * 24 * 365);
+
+      // ✅ 천단위 콤마 + 고정 소수점 표시
+      const formattedHours = hours.toFixed(2).toLocaleString();
+      const formattedDays = days.toFixed(2).toLocaleString();
+      const formattedYears = years.toFixed(4).toLocaleString();
 
       document.getElementById("result").innerText =
-        `Total Time: ${hours.toFixed(2)} Hours or ${days.toFixed(2)} Days or ${years.toFixed(4)} Years`;
+        `Total Time: ${formattedHours} Hours or ${formattedDays} Days or ${formattedYears} Years`;
     }
 
     // ✅ Upload result area to ImgBB and get link
@@ -99,10 +105,9 @@
           .then(data => {
             if (data.success) {
               const link = data.data.url;
-              navigator.clipboard.writeText(link).then(() => {
-                alert("✅ Uploaded successfully!\nLink copied to clipboard:\n" + link);
-              });
-              console.log("ImgBB Link:", link);
+              navigator.clipboard.writeText(link)
+                .then(() => alert("✅ Uploaded!\nLink copied to clipboard:\n" + link))
+                .catch(() => alert("⚠️ Clipboard not supported.\nCopy manually:\n" + link));
             } else {
               alert("❌ Upload failed: " + data.error.message);
             }
