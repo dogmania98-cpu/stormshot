@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wyvern Warzone Timer - Buzzer Alarm</title>
+<style>
+  body {
+    background: #111;
+    color: #0ff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 40px;
+  }
+  h1 {
+    font-size: 34px;
+    margin-bottom: 20px;
+  }
+  #utcTime, #localTime {
+    font-size: 22px;
+    margin: 8px;
+  }
+  #nextEvent, #countdown {
+    font-size: 26px;
+    color: #ff0;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+  #log {
+    margin-top: 40px;
+    font-size: 32px;
+    color: #ff5050;
+    font-weight: bold;
+    opacity: 1;
+    transition: opacity 0.4s ease-in-out;
+  }
+
+  /* 깜빡임 애니메이션 */
+  .flash {
+    animation: flashText 0.6s infinite;
+  }
+
+  @keyframes flashText {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.15; }
+    100% { opacity: 1; }
+  }
+
+  #activateBtn {
+    margin-top: 25px;
+    padding: 12px 22px;
+    font-size: 18px;
+    background: #0ff;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1 style="display:flex; align-items:center; justify-content:center; gap:14px;">
+    Wyvern Warzone Timer by  
+    <img src="https://images2.imgbox.com/7a/07/sm7fxml7_o.png" 
+         alt="SafeZone" 
+         style="height:40px;">
+</h1>
+
+<button id="activateBtn" onclick="unlockAudio()">🔊 Activate Alarm Sound</button>
+
+<div id="utcTime">UTC Time: --:--:--</div>
+<div id="localTime">Local Time: --:--:--</div>
+
+<div id="nextEvent">Next Event: Calculating...</div>
+<div id="countdown">Countdown: --:--:--</div>
+
+<div id="log">Waiting for next event...</div>
+
+<script>
+// =============================================================
+// 1) 타임라인 이벤트
+// =============================================================
+const events = [
+  { time: "19:50:00", text: "10 minutes. Turn on the Buffs" },
+  { time: "19:53:00", text: "Enter the battle Field" },
+  { time: "19:59:50", text: "Match Starts in 10 seconds!" },
+  { time: "20:00:30", text: "Turn on the POD 1st Team" },
+  { time: "20:02:20", text: "Landmarks opens in 10 seconds" },
+  { time: "20:04:30", text: "Priest Spawns in 30 seconds" },
+  { time: "20:04:50", text: "Priest Spawns in 10 seconds" },
+  { time: "20:09:30", text: "Dragon spawns in 30 seconds" },
+  { time: "20:09:50", text: "Dragon spawns in 10 seconds" },
+  { time: "20:19:00", text: "Turn on the POD 2nd team" },
+  { time: "20:29:30", text: "Dragon and Priest in 30 seconds" },
+  { time: "20:29:50", text: "Dragon and Priest in 10 seconds" },
+  { time: "20:39:50", text: "1st Half ends in 10 seconds" },
+  { time: "20:49:30", text: "Dragon and Priest in 30 seconds" },
+  { time: "20:49:50", text: "Dragon and Priest in 10 seconds" },
+  { time: "21:09:30", text: "Dragon and Priest in 30 seconds" },
+  { time: "21:09:50", text: "Dragon and Priest in 10 seconds" }
+];
+
+let audioCtx = null;
+const triggered = new Set();
+
+
+// =============================================================
+// 2) AudioContext 활성화
+// =============================================================
+function unlockAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const buffer = audioCtx.createBuffer(1, 1, 22050);
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioCtx.destination);
+  source.start(0);
+
+  alert("Alarm sound activated!");
+  document.getElementById("activateBtn").style.display = "none";
+}
+
+
+// =============================================================
+// 3) 강한 버저음 (Buzzer Sound)
+// =============================================================
+function buzzer() {
+  if (!audioCtx) return;
+
+  function buzz(delay) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "square"; // 진동음
+    osc.frequency.value = 200; // 저음 경고
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    const start = audioCtx.currentTime + delay;
+    const end = start + 0.35;
+
+    gain.gain.setValueAtTime(1, start); // 강한 볼륨
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+
+    osc.start(start);
+    osc.stop(end);
+  }
+
+  // 세 번 반복 경보
+  buzz(0);
+  buzz(0.5);
+  buzz(0.667);
+  buzz(1);
+}
+
+
+// =============================================================
+// 4) 이벤트 발생 → 텍스트 깜빡임 + 버저음
+// =============================================================
+function triggerAlarm(message) {
+  const log = document.getElementById("log");
+
+  log.innerText = message;
+  log.classList.add("flash");
+
+  buzzer();
+
+  // 10초 후 깜빡임 종료
+  setTimeout(() => {
+    log.classList.remove("flash");
+  }, 10000);
+}
+
+
+// =============================================================
+// 5) 시간 업데이트
+// =============================================================
+function updateClock() {
+  const now = new Date();
+
+  const utc = now.toISOString().substring(11, 19);
+  document.getElementById("utcTime").innerText = "UTC Time: " + utc;
+
+  const local = now.toTimeString().substring(0, 8);
+  document.getElementById("localTime").innerText = "Local Time: " + local;
+
+  checkEvents(utc);
+  updateCountdown(now);
+}
+
+
+// =============================================================
+// 6) 이벤트 체크
+// =============================================================
+function checkEvents(currentUTC) {
+  events.forEach(ev => {
+    if (currentUTC === ev.time && !triggered.has(ev.time)) {
+      triggerAlarm(ev.text);
+      triggered.add(ev.time);
+    }
+  });
+}
+
+
+// =============================================================
+// 7) 카운트다운
+// =============================================================
+function updateCountdown(now) {
+  const nowUTC = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()
+  ));
+
+  let upcoming = null;
+
+  for (const ev of events) {
+    const [h, m, s] = ev.time.split(":").map(Number);
+    const eventTime = new Date(Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, m, s
+    ));
+
+    if (eventTime > nowUTC) {
+      upcoming = { ev, eventTime };
+      break;
+    }
+  }
+
+  if (!upcoming) {
+    document.getElementById("nextEvent").innerText = "All events finished";
+    document.getElementById("countdown").innerText = "--:--:--";
+    return;
+  }
+
+  const diff = Math.floor((upcoming.eventTime - nowUTC) / 1000);
+
+  const hh = String(Math.floor(diff / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+  const ss = String(diff % 60).padStart(2, "0");
+
+  document.getElementById("nextEvent").innerText =
+    `Next Event: ${upcoming.ev.time} - ${upcoming.ev.text}`;
+
+  document.getElementById("countdown").innerText =
+    `Countdown: ${hh}:${mm}:${ss}`;
+}
+
+
+// =============================================================
+// 8) 실행 루프
+// =============================================================
+setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>
